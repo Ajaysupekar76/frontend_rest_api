@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card p-4 shadow-lg" style="width: 400px;">
+            <h2 class="text-center mb-4">Login</h2>
+            <form id="login-form" novalidate>
+                <!-- Email Field -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                    <div id="email-error" class="text-danger small"></div>
+                </div>
+                <!-- Password Field -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    <div id="password-error" class="text-danger small"></div>
+                </div>
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <!-- Register Link -->
+            <div class="text-center mt-3">
+                <p>Don't have an account? <a href="/register/" class="text-decoration-none">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            console.log('Form submitted'); // Debug log
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+        
+            console.log('Collected data:', { email, password }); // Debug log
+        
+            try {
+                const response = await fetch('http://127.0.0.1:8000/authentication/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+        
+                console.log('Response status:', response.status); // Debug log
+                const data = await response.json();
+                console.log('Response data:', data); // Debug log
+        
+                if (response.ok) {
+                    // Store the access token in localStorage
+                    localStorage.setItem('access_token', data.access);
+                    
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard/';
+                } else {
+                    // Handle error messages
+                    if (data.non_field_errors) {
+                        document.getElementById('password-error').textContent = data.non_field_errors[0];
+                    }
+                    if (data.email) {
+                        document.getElementById('email-error').textContent = data.email[0];
+                    }
+                    if (data.password) {
+                        document.getElementById('password-error').textContent = data.password[0];
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error); // Debug log
+                document.getElementById('password-error').textContent = 'An error occurred. Please try again later.';
+            }
+        });
+    </script>
+</body>
+</html>
